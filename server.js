@@ -44,7 +44,7 @@ const wss = new WebSocketServer({ noServer: true });
 wss.on('connection', async (ws) => {
 	sockets.push(ws);
 	console.log(await client.hGetAll('fields'));
-	ws.send(JSON.stringify(res));
+	ws.send(JSON.stringify(await client.hGetAll('fields')));
 	console.log('Client connected');
 	ws.on('message', async (message) => {
 		console.log(message)
