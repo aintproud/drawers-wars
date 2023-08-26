@@ -1,87 +1,95 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      display: grid;
-      grid-template-columns: 1fr auto; /* Первая колонка занимает оставшееся пространство, вторая колонка с фиксированным размером справа */
-      height: 100vh; /* 100% высоты видимой области */
-    }
+	<head>
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				display: grid;
+				grid-template-columns: 1fr auto; /* Первая колонка занимает оставшееся пространство, вторая колонка с фиксированным размером справа */
+				height: 100vh; /* 100% высоты видимой области */
+			}
 
-    #menu {
-      width: 400px; /* Фиксированная ширина справа */
-      background-color: rgb(107, 43, 43);
-    }
+			#menu {
+				width: 400px; /* Фиксированная ширина справа */
+				background-color: rgb(107, 43, 43);
+			}
 
-    #container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh; /* Настройте высоту контейнера по вашему усмотрению */
-  background-color: #f1f1f1; /* Цвет фона контейнера */
-}
+			#container {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				height: 100vh; /* Настройте высоту контейнера по вашему усмотрению */
+				background-color: #f1f1f1; /* Цвет фона контейнера */
+			}
 
-#canvas {
-  border: 1px solid black;
-}
-  </style>
-</head>
-<body>
-  <div id="container">
-    <canvas id="canvas" width="600" height="600"></canvas>
-  </div>
-  <div id="menu">
-    <h1>Menu</h1>
-    <label for="colorPicker">Выберите цвет:</label>
-    <input type="color" id="colorPicker">
-  </div>
-  <script>
-    const colorPicker = document.getElementById('colorPicker');
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext('2d');
-    const webSocket = new WebSocket('ws://localhost:3001');
-    let inizialized = false;
+			#canvas {
+				border: 1px solid black;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="container">
+			<canvas id="canvas" width="600" height="600"></canvas>
+		</div>
+		<div id="menu">
+			<h1>Menu</h1>
+			<label for="colorPicker">Pick color:</label>
+			<input type="color" id="colorPicker" />
+		</div>
+		<script>
+			const colorPicker = document.getElementById('colorPicker');
+			const canvas = document.getElementById('canvas');
+			const context = canvas.getContext('2d');
+			const webSocket = new WebSocket('ws://localhost:3001');
+			let inizialized = false;
 
-    canvas.onclick = (event) => {
-      console.log(event);
-      const x = event.offsetX;
-      const y = event.offsetY;
-      const row = Math.floor(x/tileSize) 
-      const col = Math.floor(y/tileSize)
-      const id = !col? row: `${col}${row}`
-      console.log(id, colorPicker.value);
-      webSocket.send(JSON.stringify({id, color: colorPicker.value}))
-    }
-    let tileSize
-    let rowsCount
-    function initFields (canvas, fields) {
-      rowsCount = Math.sqrt(Object.keys(fields).length);
-      tileSize = canvas.width / rowsCount;
-      console.log(tileSize, rowsCount, Object.keys(fields).length);
-      let count = 0;
-      for (let row = 0; row < rowsCount; row++) {
-        for (let col = 0; col < rowsCount; col++) {
-          context.fillStyle = fields[count]
-          context.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
-          count++;
-        }
-      }
-    }
-    webSocket.onmessage = (event) => {
-      console.log(event.data);
-      if (!inizialized) {
-        const fields = JSON.parse(event.data);
-        console.log(fields);
-        initFields(canvas, fields);
-        inizialized = true;
-      } else {
-        const { id, color } = JSON.parse(event.data);
-        context.fillStyle = color;
-        context.fillRect(id % rowsCount * tileSize, Math.floor(id / rowsCount) * tileSize, tileSize, tileSize);
-      }
-    }
-  </script>
-</body>
+			canvas.onclick = (event) => {
+				console.log(event);
+				const x = event.offsetX;
+				const y = event.offsetY;
+				const row = Math.floor(x / tileSize);
+				const col = Math.floor(y / tileSize);
+				const id = !col ? row : `${col}${row}`;
+				webSocket.send(
+					JSON.stringify({ id, color: colorPicker.value })
+				);
+			};
+			let tileSize;
+			let rowsCount;
+			function initFields(canvas, fields) {
+				rowsCount = Math.sqrt(Object.keys(fields).length);
+				tileSize = canvas.width / rowsCount;
+				let count = 0;
+				for (let row = 0; row < rowsCount; row++) {
+					for (let col = 0; col < rowsCount; col++) {
+						context.fillStyle = fields[count];
+						context.fillRect(
+							col * tileSize,
+							row * tileSize,
+							tileSize,
+							tileSize
+						);
+						count++;
+					}
+				}
+			}
+			webSocket.onmessage = (event) => {
+				if (!inizialized) {
+					const fields = JSON.parse(event.data);
+					initFields(canvas, fields);
+					inizialized = true;
+				} else {
+					const { id, color } = JSON.parse(event.data);
+					context.fillStyle = color;
+					context.fillRect(
+						(id % rowsCount) * tileSize,
+						Math.floor(id / rowsCount) * tileSize,
+						tileSize,
+						tileSize
+					);
+				}
+			};
+		</script>
+	</body>
 </html>
