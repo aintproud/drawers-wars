@@ -4,7 +4,7 @@ import { createClient } from 'redis';
 import { createServer } from 'http';
 import { createReadStream } from 'fs';
 import { isJSON, validateMessageJson } from './utils.js';
-console.log(isJSON());
+
 config();
 const { SERVER_PORT, REDIS_URL } = process.env;
 
