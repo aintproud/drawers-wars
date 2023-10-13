@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  redis-drawers-wars:
+  redis:
     container_name: redis-drawers-wars
     image: redis:latest
     ports:
@@ -9,15 +9,3 @@ services:
     volumes:
       # - ./redis/data:/data
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
-
-  dw_backend:
-    depends_on: 
-      - redis-drawers-wars
-    build: .
-    environment:
-     REDIS_URL: redis://redis-drawers-wars:1111
-    container_name: dw_backend
-    ports:
-      - "3001:3001"
-    links:
-      - redis-drawers-wars
