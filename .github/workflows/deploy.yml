@@ -1,0 +1,19 @@
+name: Drawers Wars
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    timeout-minutes: 5
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Stop and remove containers, networks
+        run: sudo docker-compose down
+      - name: Remove unused data
+        run: sudo docker system prune -a -f
+      - name: docker-compose
+        run: sudo docker-compose up -d

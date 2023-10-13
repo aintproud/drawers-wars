@@ -9,14 +9,6 @@ config();
 const { SERVER_PORT, REDIS_URL } = process.env;
 
 const client = createClient({ url: REDIS_URL });
-await client.connect();
-const isFields = await client.keys('fields');
-if (!Object.keys(isFields).length) {
-	const fields = Array(100).fill('#000000');
-	for (let i = 0; i < fields.length; i++) {
-		await client.hSet('fields', String(i), fields[i]);
-	}
-}
 
 const sockets = [];
 const wss = new WebSocketServer({ noServer: true });
@@ -24,6 +16,13 @@ wss.on('connection', async (ws) => {
 	sockets.push(ws);
 	ws.send(JSON.stringify(await client.hGetAll('fields')));
 	ws.on('message', async (message) => {
+		await client.connect();
+		if (!Object.keys(isFields).length) {
+			const fields = Array(100).fill('#000000');
+			for (let i = 0; i < fields.length; i++) {
+				await client.hSet('fields', String(i), fields[i]);
+			}
+		}
 		let json;
 		if (isJSON(message)) {
 			json = JSON.parse(message);
@@ -38,6 +37,7 @@ wss.on('connection', async (ws) => {
 		for (const socket of sockets) {
 			socket.send(JSON.stringify({ id, color }));
 		}
+		const isFields = await client.keys('fields');
 	});
 });
 wss.on('close', () => {
