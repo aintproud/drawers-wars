@@ -16,8 +16,4 @@ jobs:
       - name: Remove unused data
         run: docker system prune -a -f
       - name: docker-compose
-<<<<<<< HEAD
         run: docker-compose up -d
-=======
-        run: docker-compose up -d
->>>>>>> 67a7e75 (sdf)
