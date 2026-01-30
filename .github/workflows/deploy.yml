@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - production
+  on:
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -12,8 +14,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
       - name: Stop and remove containers, networks
-        run: docker-compose down
+        run: docker compose down
       - name: Remove unused data
         run: docker system prune -a -f
-      - name: docker-compose
-        run: docker-compose up -d
+      - name: docker compose
+        run: docker compose up -d
